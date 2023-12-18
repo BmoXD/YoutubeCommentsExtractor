@@ -1,9 +1,13 @@
+from configparser import ConfigParser
 import os
 import yt_dlp
 import json
 import yaml
 import logging
 import logging.config
+
+video_url = ''
+cookies = ''
 
 def download_comments(video_url):
     log.debug("Downloading comments for video: %s", video_url)
@@ -12,12 +16,19 @@ def download_comments(video_url):
         'extract_flat': True,
         'skip_download': True,
         'writeinfojson': True,
-        'getcomments': True
+        'getcomments': True,
     }
 
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        info_dict = ydl.extract_info(video_url, download=False)
-        comments = info_dict.get('comments', [])
+    # Check if cookies is not an empty string before adding it to ydl_opts
+    if cookies:
+        ydl_opts['cookiefile'] = cookies
+    
+    try:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info_dict = ydl.extract_info(video_url, download=False)
+            comments = info_dict.get('comments', [])
+    except:
+        log.exception('')
 
     log.debug("Downloaded %d comments for video: %s", len(comments), video_url)
     return comments
@@ -34,20 +45,22 @@ def print_comments(comments):
     log.info("Printing formatted comments:")
     
     print("\nFormatted Comments:")
-    for comment in comments:
+    for comment in comments[:50]: # Printing only 50 comments per run
         comment_id = comment.get('id', '')
         timestamp = comment.get('timestamp', '')
         username = comment.get('author', '')
         text = comment.get('text', '')
 
         formatted_comment = f"[{comment_id}] : [{timestamp}] : [{username}] : {text}"
-        print(formatted_comment)
+        log.debug(formatted_comment)
 
 def main():
+    global video_url
     log.info("Starting the script.")
 
-    video_url = input("Enter YouTube video URL or ID: ")
-    log.debug("User input video URL or ID: %s", video_url)
+    if video_url == '':
+        video_url = input("Enter YouTube video URL or ID: ")
+        log.debug("User input video URL or ID: %s", video_url)
     
     comments = download_comments(video_url)
 
@@ -74,6 +87,16 @@ if __name__ == "__main__":
     logging.config.dictConfig(log_config)
     
     log = logging.getLogger('root')
+    
+    try:
+        config = ConfigParser()
+        config.read('config.ini')
 
+        video_url = config.get('youtube', 'video_link').strip()
+        cookies = config.get('youtube', 'cookies_file')
+    except:
+        log.exception('')
+    log.info("Done loading config.ini")
+        
 
     main()
