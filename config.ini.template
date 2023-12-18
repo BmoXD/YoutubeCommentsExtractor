@@ -1,0 +1,9 @@
+[youtube]
+video_link = 
+cookies_file = 
+
+[mysql_config]
+mysql_host = 127.0.0.1
+mysql_db = ytcomments
+mysql_user = username
+mysql_pass = mysuperpass
