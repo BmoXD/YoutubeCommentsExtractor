@@ -2,8 +2,8 @@
 video_link = 
 cookies_file = 
 
-[mysql_config]
+[mysql]
 mysql_host = 127.0.0.1
 mysql_db = ytcomments
 mysql_user = username
-mysql_pass = mysuperpass
+mysql_pass = pass

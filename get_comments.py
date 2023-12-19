@@ -66,6 +66,7 @@ def download_comments(video_url):
     log.debug("Downloaded %d comments for video: %s", len(video_data['comments']), video_url)
     return video_data
 
+"""
 def save_to_json(comments, output_file='comments.json'):
     log.info("Saving comments to JSON file: %s", output_file)
     
@@ -86,7 +87,8 @@ def print_comments(comments):
 
         formatted_comment = f"[{comment_id}] : [{timestamp}] : [{username}] : {comment_text}"
         log.debug(formatted_comment)
-
+"""
+        
 def save_to_db(video_data):
     global connection
 
@@ -102,7 +104,6 @@ def save_to_db(video_data):
 
         cursor.execute(f"SELECT COUNT(*) FROM information_schema.tables WHERE table_name = '{channel_id}'")
         aaaa = cursor.fetchone()[0]
-        print("adsadssadsad: "+ str(aaaa))
         if aaaa <= 0:
             log.info("This video of id ["+video_id+"] is from a channel of id ["+channel_id+"] never seen before. Creating new table!")
             # Create a new table for the specific video
@@ -178,8 +179,8 @@ def main():
     video_data = download_comments(video_url)
 
     if video_data:
-        print_comments(video_data["comments"])
-        save_to_json(video_data["comments"])
+        #print_comments(video_data["comments"])
+        #save_to_json(video_data["comments"])
         save_to_db(video_data)
     else:
         log.warning("No comments found for the given video.")

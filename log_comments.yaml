@@ -8,7 +8,7 @@ formatters:
 handlers:
   file:
     class: logging.handlers.TimedRotatingFileHandler
-    level: DEBUG
+    level: INFO
     formatter: complex
     filename: log/log_getcomments.log
     when: 'midnight'
@@ -18,10 +18,10 @@ handlers:
     interval: 1
   screen:
     class: logging.StreamHandler
-    level: DEBUG
+    level: INFO
     formatter: simple
     stream: ext://sys.stdout
 
 root:
-  level: DEBUG
+  level: INFO
   handlers: [file, screen]
