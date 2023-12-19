@@ -111,9 +111,13 @@ def save_to_db(video_data):
                     id INT AUTO_INCREMENT PRIMARY KEY,
                     video_id VARCHAR(255),
                     comment_id VARCHAR(255),
-                    timestamp DATETIME,
                     username VARCHAR(255),
-                    comment_text TEXT
+                    comment_text TEXT,
+                    human_timestamp DATETIME,
+                    is_author BOOL,
+                    is_favorite BOOL,
+                    likes INT,
+                    timestamp VARCHAR(255)
                 )
             """
             cursor.execute(create_table_query)
@@ -122,7 +126,7 @@ def save_to_db(video_data):
             log.info("Table "+ channel_id +" created successfully.")
 
         for comment in comments:
-            comment_id = comment.get('id', '')
+            comment_id = comment.get("id")
 
             # Check if the comment_id already exists in the table
             check_query = f"SELECT * FROM `{channel_id}` WHERE comment_id = %s"
@@ -133,17 +137,24 @@ def save_to_db(video_data):
                  log.info("Comment with comment_id ["+comment_id+"] already exists in the table. Skipping insertion.")
                  continue
 
-            timestamp = comment.get('timestamp', '')
+            timestamp = comment.get("timestamp")
             formated_timestamp = datetime.utcfromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S') # Unix time to human readable time
-            username = comment.get('author', '')
-            comment_text = comment.get('text', '')
+            username = comment.get("author")
+            comment_text = comment.get("text")
+            is_author = comment.get("author_is_uploader")
+            is_favorite = comment.get("is_favorited")
+            likes = comment.get("like_count")
+
+            # Sometimes if there are no likes to comment, yt-dlp returns null
+            if likes is None:
+                 likes = 0
 
             # Insert the comment into the MySQL database
             insert_query = f"""
-                INSERT INTO `{channel_id}` (video_id, comment_id, timestamp, username, comment_text)
-                VALUES (%s, %s, %s, %s, %s)
+                INSERT INTO `{channel_id}` (video_id, comment_id, username, comment_text, human_timestamp, is_author, is_favorite, likes, timestamp)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
             """
-            query_values = (video_id, comment_id, formated_timestamp, username, comment_text)
+            query_values = (video_id, comment_id, username, comment_text, formated_timestamp, is_author, is_favorite, likes, timestamp)
             cursor.execute(insert_query, query_values)
             connection.commit()
 
@@ -167,8 +178,8 @@ def main():
     video_data = download_comments(video_url)
 
     if video_data:
-        print_comments(video_data['comments'])
-        save_to_json(video_data['comments'])
+        print_comments(video_data["comments"])
+        save_to_json(video_data["comments"])
         save_to_db(video_data)
     else:
         log.warning("No comments found for the given video.")
@@ -210,8 +221,6 @@ if __name__ == "__main__":
 
     # Let's connect to the database
     init_db()
-    
-    log.info('Connecting to MySQL DB')
 
     log.info('Connecting to MySQL DB')
     try:
