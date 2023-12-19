@@ -1,0 +1,1 @@
+ALTER TABLE %s ADD COLUMN is_author BOOL;

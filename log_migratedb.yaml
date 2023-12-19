@@ -10,7 +10,7 @@ handlers:
     class: logging.handlers.TimedRotatingFileHandler
     level: INFO
     formatter: complex
-    filename: log/log_getcomments.log
+    filename: log/migrate_db.log
     when: 'midnight'
     encoding: 'utf-8'
     delay: False
